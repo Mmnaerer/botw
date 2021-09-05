@@ -58,8 +58,11 @@ const { herodetails } = require('./lib/herodetail.js')
 let _scommand = JSON.parse(fs.readFileSync('./database/scommand.json'))
 
 //=====[File Biar Rapi dikit]====
-const antilink = JSON.parse(fs.readFileSync("./database/antilink.json"));
-const antivo = JSON.parse(fs.readFileSync("./database/antivo.json"));
+const antilink = JSON.parse(fs.readFileSync("./database/antilink.json"))
+const antivo = JSON.parse(fs.readFileSync("./database/antivo.json"))
+const antivirtex = JSON.parse(fs.readFileSync("./database/antivirtex.json"))
+const kickarea = JSON.parse(fs.readFileSync("./database/antibule.json"))
+const antihidetg = JSON.parse(fs.readFileSync("./database/antihidetag.json"))
 
 banChats = false
 offline = false
@@ -144,8 +147,10 @@ module.exports = hexa = async (hexa, mek) => {
 		const isGroupAdmins = groupAdmins.includes(sender) || false
 		const isOwner = ownerNumber.includes(sender)
         const isVote = isGroup ? voting.includes(from) : false
-        const isAntilink = isGroup ? antilink.includes(from) : false; //antilink
-        const isAntiviewonce = isGroup ? antivo.includes(from) : false;
+        const isAntilink = isGroup ? antilink.includes(from) : false //antilink
+        const isAntivirtex = isGroup ? antivirtex.includes(from) : false
+        const isAntihidetag = isGroup ? antihidetg.includes(from) : false
+        const isKickarea = isGroup ? kickarea.includes(from) : false;
         const conts = mek.key.fromMe ? hexa.user.jid : hexa.contacts[sender] || { notify: jid.replace(/@.+/, '') }
         if (isCmd) cmdadd()
         const pushname = mek.key.fromMe ? hexa.user.name : conts.notify || conts.vname || conts.name || '-'
@@ -486,14 +491,26 @@ const sendButMessage = (id, text1, desc1, but = [], options = {}) => {
         hexa.groupRemove(from, [sender]);
       }
     }
-    if (isGroup && isAntiviewonce && m.mtype == "viewOnceMessage") {
-      reply(
-        `@${sender.split("@")[0]} Terdeteksi mengirim gambar/video viewonce!`
+    if (
+      isGroup &&
+      isAntihidetag &&
+      m.message[m.mtype]?.contextInfo?.mentionedJid?.length ==
+        groupMembers.length
+    ) {
+      console.log(
+        color("[ANTI-HIDETAG]", "red"),
+        color(`@${sender.split("@")[0]} mengirim pesan hidetag`, "white")
       );
-      var msg = { ...mek };
-      msg.mek = mek.message.viewOnceMessage.message;
-      msg.mek[Object.keys(msg.mek)[0]].viewOnce = false;
-      hexa.copyNForward(m.chat, msg);
+      reply(`@${sender.split("@")[0]} Terdeteksi mengirim pesan hidetag!!`);
+      kick(from, sender);
+    }
+
+    if (isGroup && isAntivirtex && !mek.key.fromMe) {
+      if (budy.length > 700) {
+        if (isGroupAdmins) return reply("admin bebas");
+        reply("ANTIVIRTEX DETECTED!! MAAF ANDA AKAN DIKICK ;V");
+        hexa.groupRemove(from, sender);
+      }
     }
     let settingstatus = 0;
     if (new Date() * 1 - settingstatus > 1000) {
@@ -788,40 +805,75 @@ break
           ]);
         }
         break
- case "antiviewonce":
+    case "antivirtex":
         if (!isGroup) return reply("Khusus di grup");
         if (!isGroupAdmins && !mek.key.fromMe) return reply("Khusus admin");
         if (args[0] == "on") {
-          if (isAntiviewonce) return reply("Sudah aktif!!");
-          antivo.push(from);
-          fs.writeFileSync("./database/antivo.json", JSON.stringify(antivo));
-          reply("Sukses mengaktifkan antiviewonce!");
-        } else if (args[0] == "off") {
-          antivo.splice(from, 1);
-          fs.writeFileSync("./database/antivo.json", JSON.stringify(antivo));
-          reply("Sukses mematikan antiviewonce!");
-        } else if (!q) {
-          sendButMessage(
-            from,
-            `MODE ANTIVIEWONCE`,
-            `Silahkan pilih salah satu`,
-            [
-              {
-                buttonId: `${prefix}antiviewonce on`,
-                buttonText: {
-                  displayText: `on`,
-                },
-                type: 1,
-              },
-              {
-                buttonId: `${prefix}antiviewonce off`,
-                buttonText: {
-                  displayText: `off`,
-                },
-                type: 1,
-              },
-            ]
+          if (isAntivirtex) return reply("Sudah aktif!!");
+          antivirtex.push(from);
+          fs.writeFileSync(
+            "./database/antivirtex.json",
+            JSON.stringify(antivirtex)
           );
+          reply("Sukses mengaktifkan antivirtex!");
+        } else if (args[0] == "off") {
+          antivirtex.splice(from, 1);
+          fs.writeFileSync("./database/antivirtex.json", JSON.stringify(ant));
+          reply("Sukses mematikan antivirtex!");
+        } else if (!q) {
+          sendButMessage(from, `MODE ANTIVIRTEX`, `Silahkan pilih salah satu`, [
+            {
+              buttonId: `${prefix}antivirtex on`,
+              buttonText: {
+                displayText: `on`,
+              },
+              type: 1,
+            },
+            {
+              buttonId: `${prefix}antivirtex off`,
+              buttonText: {
+                displayText: `off`,
+              },
+              type: 1,
+            },
+          ]);
+        }
+        break
+      case "kickarea":
+        if (!isGroup) return reply("Khusus di grup");
+        if (!isGroupAdmins && !mek.key.fromMe) return reply("Khusus admin");
+        if (args[0] == "on") {
+          if (isKickarea) return reply("Sudah aktif!!");
+          kickarea.push(from);
+          fs.writeFileSync(
+            "./database/antibule.json",
+            JSON.stringify(kickarea)
+          );
+          reply("Sukses mengaktifkan kickarea!");
+        } else if (args[0] == "off") {
+          kickarea.splice(from, 1);
+          fs.writeFileSync(
+            "./database/antibule.json",
+            JSON.stringify(kickarea)
+          );
+          reply("Sukses mematikan kickarea!");
+        } else if (!q) {
+          sendButMessage(from, `MODE KICKAREA`, `Silahkan pilih salah satu`, [
+            {
+              buttonId: `${prefix}kickarea on`,
+              buttonText: {
+                displayText: `on`,
+              },
+              type: 1,
+            },
+            {
+              buttonId: `${prefix}kickarea off`,
+              buttonText: {
+                displayText: `off`,
+              },
+              type: 1,
+            },
+          ]);
         }
         break
  case 'owner':
@@ -868,6 +920,207 @@ case 'buttons1':
               res = await y2mateV(teks)
               sendFileFromUrl(res[0].link, video, {quoted: mek, mimetype: 'video/mp4', filename: res[0].output})
               break
+case "reminder": // by Slavyan
+        if (!q)
+          return reply(
+            `CONTOH PENGGUNANNYA:\n${prefix}reminder text/2s\n\nNOTE: \n*s* - seconds\n*m* - minutes\n*h* - hours\n*d* - days`
+          );
+        teks = body.slice(10);
+        const messRemind = teks.split("/")[0];
+        const timeRemind = teks.split("/")[1];
+        typeRemind = "Text";
+        if (isQuotedImage) typeRemind = "Image";
+        if (isQuotedSticker) typeRemind = "Sticker";
+        if (isQuotedAudio) typeRemind = "Audio";
+        if (!isQuotedImage && !isQuotedAudio && !isQuotedSticker)
+          typeRemind = "Text";
+        const parsedTime = ms(toMs(timeRemind));
+        reminder.addReminder(
+          sender,
+          messRemind,
+          typeRemind,
+          timeRemind,
+          _reminder
+        );
+        if (!isQuotedImage && !isQuotedSticker && !isQuotedAudio) {
+          await hexa.sendMessage(
+            from,
+            `── 「 REMINDER 」 ──
+    
+Reminder berhasil diaktifkan!
+➸ Pesan: ${messRemind}
+➸ Type: Text
+➸ Durasi: ${parsedTime.hours} jam ${parsedTime.minutes} menit ${
+              parsedTime.seconds
+            } detik
+➸ Untuk: @${sender.split("@")[0]}
+    `,
+            text,
+            { contextInfo: { mentionedJid: [sender] } }
+          );
+          const intervRemind = setInterval(async () => {
+            if (Date.now() >= reminder.getReminderTime(sender, _reminder)) {
+              anu = await reminder.getReminderMsg(sender, _reminder);
+              hexa.sendMessage(
+                from,
+                `── 「 REMINDER 」 ──
+
+⏰ @${sender.split("@")[0]} ⏰
+➸ Pesan: ${messRemind}
+➸ Type: ${reminder.getReminderType(sender, _reminder)}`,
+                text,
+                { contextInfo: { mentionedJid: [sender] } }
+              );
+              _reminder.splice(
+                reminder.getReminderPosition(sender, _reminder),
+                1
+              );
+              fs.writeFileSync(
+                "./database/reminder.json",
+                JSON.stringify(_reminder)
+              );
+              clearInterval(intervRemind);
+            }
+          }, 1000);
+        } else if (isQuotedSticker) {
+          encmedia = JSON.parse(JSON.stringify(mek).replace("quotedM", "m"))
+            .message.extendedTextMessage.contextInfo;
+          media = await hexa.downloadAndSaveMediaMessage(encmedia);
+          await hexa.sendMessage(
+            from,
+            `── 「 REMINDER 」 ──
+    
+Reminder berhasil diaktifkan!
+➸ Pesan: ${messRemind}
+➸ Type: Sticker
+➸ Durasi: ${parsedTime.hours} jam ${parsedTime.minutes} menit ${
+              parsedTime.seconds
+            } detik
+➸ Untuk: @${sender.split("@")[0]}
+    `,
+            text,
+            { contextInfo: { mentionedJid: [sender] } }
+          );
+          const intervRemind = setInterval(async () => {
+            if (Date.now() >= reminder.getReminderTime(sender, _reminder)) {
+              anu = await reminder.getReminderMsg(sender, _reminder);
+              hexa.sendMessage(
+                from,
+                `── 「 REMINDER 」 ──
+
+⏰ @${sender.split("@")[0]} ⏰
+➸ Pesan: ${messRemind}
+➸ Type: ${reminder.getReminderType(sender, _reminder)}`,
+                text,
+                { contextInfo: { mentionedJid: [sender] } }
+              );
+              hexa.sendMessage(from, fs.readFileSync(media), sticker);
+              _reminder.splice(
+                reminder.getReminderPosition(sender, _reminder),
+                1
+              );
+              fs.writeFileSync(
+                "./database/reminder.json",
+                JSON.stringify(_reminder)
+              );
+              clearInterval(intervRemind);
+            }
+          }, 1000);
+        } else if (isQuotedImage) {
+          encmedia = isQuotedImage
+            ? JSON.parse(JSON.stringify(mek).replace("quotedM", "m")).message
+                .extendedTextMessage.contextInfo
+            : mek;
+          media = await hexa.downloadAndSaveMediaMessage(encmedia);
+          await hexa.sendMessage(
+            from,
+            `── 「 REMINDER 」 ──
+    
+Reminder berhasil diaktifkan!
+➸ Pesan: ${messRemind}
+➸ Type: Image
+➸ Durasi: ${parsedTime.hours} jam ${parsedTime.minutes} menit ${
+              parsedTime.seconds
+            } detik
+➸ Untuk: @${sender.split("@")[0]}
+    `,
+            text,
+            { contextInfo: { mentionedJid: [sender] } }
+          );
+          const intervRemind = setInterval(async () => {
+            if (Date.now() >= reminder.getReminderTime(sender, _reminder)) {
+              anu = await reminder.getReminderMsg(sender, _reminder);
+              teks = `── 「 REMINDER 」 ──
+
+⏰ @${sender.split("@")[0]} ⏰
+➸ Pesan: ${messRemind}
+➸ Type: ${reminder.getReminderType(sender, _reminder)}`;
+              hexa.sendMessage(from, media, image, {
+                contextInfo: { mentionedJid: [sender] },
+                caption: teks,
+              });
+              _reminder.splice(
+                reminder.getReminderPosition(sender, _reminder),
+                1
+              );
+              fs.writeFileSync(
+                "./database/reminder.json",
+                JSON.stringify(_reminder)
+              );
+              clearInterval(intervRemind);
+            }
+          }, 1000);
+        } else if (isQuotedAudio) {
+          encmedia = JSON.parse(JSON.stringify(mek).replace("quotedM", "m"))
+            .message.extendedTextMessage.contextInfo;
+          media = await hexa.downloadAndSaveMediaMessage(encmedia);
+          await hexa.sendMessage(
+            from,
+            `── 「 REMINDER 」 ──
+    
+Reminder berhasil diaktifkan!
+➸ Pesan: ${messRemind}
+➸ Type: Audio
+➸ Durasi: ${parsedTime.hours} jam ${parsedTime.minutes} menit ${
+              parsedTime.seconds
+            } detik
+➸ Untuk: @${sender.split("@")[0]}
+    `,
+            text,
+            { contextInfo: { mentionedJid: [sender] } }
+          );
+          const intervRemind = setInterval(async () => {
+            if (Date.now() >= reminder.getReminderTime(sender, _reminder)) {
+              anu = await reminder.getReminderMsg(sender, _reminder);
+              hexa.sendMessage(
+                from,
+                `── 「 REMINDER 」 ──
+
+⏰ @${sender.split("@")[0]} ⏰
+➸ Pesan: ${messRemind}
+➸ Type: ${reminder.getReminderType(sender, _reminder)}`,
+                text,
+                { contextInfo: { mentionedJid: [sender] } }
+              );
+              hexa.sendMessage(from, fs.readFileSync(media), audio, {
+                contextInfo: { mentionedJid: [sender] },
+                mimetype: "audio/mp4",
+                ptt: true,
+                caption: teks,
+              });
+              _reminder.splice(
+                reminder.getReminderPosition(sender, _reminder),
+                1
+              );
+              fs.writeFileSync(
+                "./database/reminder.json",
+                JSON.stringify(_reminder)
+              );
+              clearInterval(intervRemind);
+            }
+          }, 1000);
+        }
+        break
 //------------------< Sticker Cmd >-------------------
        case 'addcmd': 
        case 'setcmd':
@@ -1198,9 +1451,21 @@ ${anime.desc}\n\n*Link Batch* : ${anime.batch}\n*Link Download SD* : ${anime.bat
             var split = args.join(' ').replace(/@|\d/gi, '').split('|')
             var taged = mek.message.extendedTextMessage.contextInfo.mentionedJid[0]
             var options = {contextInfo: {quotedMessage: {extendedTextMessage: {text: split[0]}}}}
-            const responye = await hexa.sendMessage(jids, `${split[1]}`, MessageType.text, options)
-            await hexa.deleteMessage(jids, { id: responye.messageID, remoteJid: jids, fromMe: true })
-            break
+            const responye2 = await hexa.sendMessage(jids, `${split[1]}`, MessageType.text, options)
+            await hexa.deleteMessage(jids, { id: responye2.messageID, remoteJid: jids, fromMe: true })
+            break 
+        const responye = await hexa.sendMessage(
+          jids,
+          `${split[1]}`,
+          MessageType.text,
+          options
+        );
+        await hexa.deleteMessage(jids, {
+          id: responye.messageID,
+          remoteJid: jids,
+          fromMe: true,
+        });
+        break;
     case 'tomp3':
             if (!isQuotedVideo) return fakegroup('Reply videonya!')
             fakegroup(mess.wait)
