@@ -1,5 +1,3 @@
-// SC NYA JANGAN DI JUAL NGENTOD
-// Recode Vall Popaye
 const
 	{
 		WAConnection,
@@ -17,6 +15,7 @@ const
 		mentionedJid,
 		processTime,
 	} = require("@adiwajshing/baileys")
+const simple = require("./lib/simple.js");
 const hx = require('hxz-api')
 const qrcode = require("qrcode-terminal")
 const moment = require("moment-timezone")
@@ -54,12 +53,13 @@ const voting = JSON.parse(fs.readFileSync('./lib/voting.json'))
 const { addVote, delVote } = require('./lib/vote')
 const { y2mateA, y2mateV } = require('./lib/y2mate')
 const { jadibot, stopjadibot, listjadibot } = require('./lib/jadibot')
+const { herodetails } = require('./lib/herodetail.js')
 
 let _scommand = JSON.parse(fs.readFileSync('./database/scommand.json'))
 
 //=====[File Biar Rapi dikit]====
-const gcdetect = JSON.parse(fs.readFileSync('./src/gcdetect.json'))
-
+const antilink = JSON.parse(fs.readFileSync("./database/antilink.json"));
+const antivo = JSON.parse(fs.readFileSync("./database/antivo.json"));
 
 banChats = false
 offline = false
@@ -132,6 +132,7 @@ module.exports = hexa = async (hexa, mek) => {
 		// const isSelfNumber = config.NomorSELF
 		// const isOwner = sender.id === isSelfNumber
 		const totalchat = await hexa.chats.all()
+    		const m = simple.smsg(hexa, mek);
 		const groupMetadata = isGroup ? await hexa.groupMetadata(from) : ''
 		const groupName = isGroup ? groupMetadata.subject : ''
 		const groupId = isGroup ? groupMetadata.jid : ''
@@ -142,8 +143,9 @@ module.exports = hexa = async (hexa, mek) => {
 		const isBotGroupAdmins = groupAdmins.includes(botNumber) || false
 		const isGroupAdmins = groupAdmins.includes(sender) || false
 		const isOwner = ownerNumber.includes(sender)
-	  const isGcdetect = isGroup ? gcdetect.includes(from) : false 
         const isVote = isGroup ? voting.includes(from) : false
+        const isAntilink = isGroup ? antilink.includes(from) : false; //antilink
+        const isAntiviewonce = isGroup ? antivo.includes(from) : false;
         const conts = mek.key.fromMe ? hexa.user.jid : hexa.contacts[sender] || { notify: jid.replace(/@.+/, '') }
         if (isCmd) cmdadd()
         const pushname = mek.key.fromMe ? hexa.user.name : conts.notify || conts.vname || conts.name || '-'
@@ -178,7 +180,7 @@ module.exports = hexa = async (hexa, mek) => {
         }
 
         const reply = (teks) => {
-            hexa.sendMessage(from, teks, text, {quoted:fvid})
+            hexa.sendMessage(from, teks, text, {quoted:fgc})
         }
 const textImg = (teks) => {
            return hexa.sendMessage(from, teks, text, {quoted: mek, thumbnail: fs.readFileSync('./lib/vallgans.jpeg')})
@@ -205,7 +207,7 @@ const textImg = (teks) => {
                   key: {fromMe: false,participant: `0@s.whatsapp.net`, ...(from ? { remoteJid: "6285955372133@s.whatsapp.net" } : {})},message: { "audioMessage": {"mimetype":"audio/ogg; codecs=opus","seconds": "9999999","ptt": "true"}}}
             //FAKE TEXT
             const ftext = {
-                  key: {fromMe: false,participant: `0@s.whatsapp.net`, ...(from ? { remoteJid: "6285955372133@s.whatsapp.net" } : {})},message: { "extendedTextMessage": {"text": `${fake}`,"title": `Hmm`,'jpegThumbnail': fs.readFileSync('./stik/thumb.jpeg')}}}
+                  key: {fromMe: false,participant: `0@s.whatsapp.net`, ...(from ? { remoteJid: "6285955372133@s.whatsapp.net" } : {})},message: { "extendedTextMessage": {"text": `${fake}`,"title": `Subscribe IWasHuman`,'jpegThumbnail': fs.readFileSync('./stik/thumb.jpeg')}}}
             //FAKE LIVE ACTION
             const floc2 = {
                   key: {"fromMe": false,"participant": `0@s.whatsapp.net`, "remoteJid": "6289530863358-1621036495@g.us" },message: { "liveLocationMessage": { "title":`${fake}`,}}}
@@ -237,8 +239,8 @@ const fvid = {
                  "videoMessage": { 
                  "title":"hallo bang",
                  "h": `Hmm`, 
-                 'seconds': '99', 
-                 'caption': 'Bokep fripayer',
+                 'seconds': '1', 
+                 'caption': 'Subscribe IWasHuman',
                  'jpegThumbnail': fs.readFileSync('./stik/thumb.jpeg')
                         }
                        }
@@ -340,6 +342,20 @@ const fvid = {
 })
 })
 }
+const sendButMessage = (id, text1, desc1, but = [], options = {}) => {
+      const buttonMessage = {
+        contentText: text1,
+        footerText: desc1,
+        buttons: but,
+        headerType: 1,
+      };
+      hexa.sendMessage(
+        id,
+        buttonMessage,
+        MessageType.buttonsMessage,
+        options
+      );
+    }
         const sendMediaURL = async(to, url, text="", mids=[]) =>{
                 if(mids.length > 0){
                     text = normalizeMention(to, text, mids)
@@ -370,6 +386,12 @@ const fvid = {
                 });
             }   
 //FUNCTION
+    function clockString(ms) {
+      let h = isNaN(ms) ? "--" : Math.floor(ms / 3600000);
+      let m = isNaN(ms) ? "--" : Math.floor(ms / 60000) % 60;
+      let s = isNaN(ms) ? "--" : Math.floor(ms / 1000) % 60;
+      return [h, m, s].map((v) => v.toString().padStart(2, 0)).join(":");
+    }
             cekafk(afk)
             if (!mek.key.remoteJid.endsWith('@g.us') && offline){
             if (!mek.key.fromMe){
@@ -455,6 +477,32 @@ const fvid = {
         }
     }
 }	
+    //kasih wm gw ajg kalau make
+    if (isGroup && isAntilink && !mek.key.fromMe) {
+      if (budy.includes("://chat.whatsapp.com/")) {
+        if (isGroupAdmins) return reply("admin bebas");
+        await reply("ANTILINK DETECTED!!\nMaaf Member telah saya kick");
+        sleep(2000)
+        hexa.groupRemove(from, [sender]);
+      }
+    }
+    if (isGroup && isAntiviewonce && m.mtype == "viewOnceMessage") {
+      reply(
+        `@${sender.split("@")[0]} Terdeteksi mengirim gambar/video viewonce!`
+      );
+      var msg = { ...mek };
+      msg.mek = mek.message.viewOnceMessage.message;
+      msg.mek[Object.keys(msg.mek)[0]].viewOnce = false;
+      hexa.copyNForward(m.chat, msg);
+    }
+    let settingstatus = 0;
+    if (new Date() * 1 - settingstatus > 1000) {
+      let _uptime = process.uptime() * 1000;
+      let uptime = clockString(_uptime);
+
+      await hexa.setStatus(`Bot Aktif Selama : ${uptime}`).catch((_) => _);
+      settingstatus = new Date() * 1;
+    }
         if (!mek.key.fromMe && banChats === true) return
 switch (command) {
     case 'jadibot':
@@ -572,6 +620,7 @@ case 'menu1':
 *│*⬡ _${prefix}kontak_
 *│*
 *├ ❒ TAG*
+*│*⬡ _${prefix}notif_
 *│*⬡ _${prefix}hidetag_
 *│*⬡ _${prefix}kontag_
 *│*⬡ _${prefix}sticktag_
@@ -613,6 +662,16 @@ buttons = [{buttonId: `${prefix}mowner`,buttonText:{displayText: 'Menu Owner ❌
           prep = await hexa.prepareMessageFromContent(from,{buttonsMessage},{quoted: ftroli})
                hexa.relayWAMessage(prep)
                break
+case 'update':
+if (!isGroup) return reply('Hanya di grup')
+		     data = fs.readFileSync('./lib/updatelogs.js');
+                 jsonData = JSON.parse(data);
+                 randIndex = Math.floor(Math.random() * jsonData.length);
+                 randKey = jsonData[randIndex];
+                 updatelogs = await getBuffer(randKey.result)
+                 hexa.sendMessage(from, updatelogs, image, {quoted: mek, caption: '\`\`\`UPDATE LOGS\`\`\`'})
+				break
+
 case 'mowner':
     if(!isOwner) return reply(mess.owneronly)
     reply(`
@@ -646,7 +705,7 @@ case 'mowner':
      *│*⬡ _${prefix}welcome_
      *│*⬡ _${prefix}group_
      *│*⬡ _${prefix}leave_
-     *│*⬡ _${prefix}gcdetect_
+     *│*⬡ _${prefix}antilink_
      *└─────────────────*
      `
     buttons = [{buttonId: `${prefix}donasi`,buttonText:{displayText: 'Donasi'},type:1}]
@@ -661,7 +720,110 @@ case 'mowner':
               prep = await hexa.prepareMessageFromContent(from,{buttonsMessage},{quoted: ftroli})
                    hexa.relayWAMessage(prep)
                    break
+ //-----------------< Fitur Random >-------------------
+ case 'herodetail':
+res = await herodetails(body.slice(12))
+her = `*Hero Details ${body.slice(12)}*
 
+*Nama* : ${res.hero_name}
+*Role* : ${res.role}
+*Quotes* : ${res.entrance_quotes}
+*Fitur Hero* : ${res.hero_feature}
+*Spesial* : ${res.speciality}
+*Rekomendasi Lane* : ${res.laning_recommendation}
+*Harga* : ${res.price.battle_point} [Battle point] | ${res.price.diamond} [DM] | ${res.price.hero_fragment} [Fragment]
+*Rilis* : ${res.release_date}
+
+*Durability* : ${res.skill.durability}
+*Offence* : ${res.skill.offense}
+*Skill Effect* : ${res.skill_effects}
+*Difficulty* : ${res.skill.difficulty}
+ 
+*Movement Speed* : ${res.attributes.movement_speed}
+*Physical Attack* : ${res.attributes.physical_attack}
+*Magic Defense* : ${res.attributes.magic_defense}
+*Ability Crit Rate* : ${res.attributes.ability_crit_rate}
+*HP* : ${res.attributes.hp}
+*Mana* : ${res.attributes.mana}
+*Mana Regen* : ${res.attributes.mana_regen}
+
+*Story* : ${res.background_story}`
+reply(her)
+break
+//------------------< Fitur Anti antian >-------------------
+      case "antilink":
+        if (!isGroup) return reply("Khusus di grup");
+        if (!isGroupAdmins && !mek.key.fromMe) return reply("Khusus admin");
+        if (args[0] == "on") {
+          if (isAntilink) return reply("Sudah aktif!!");
+          antilink.push(from);
+          fs.writeFileSync(
+            "./database/antilink.json",
+            JSON.stringify(antilink)
+          );
+          reply("Sukses mengaktifkan antilink!");
+        } else if (args[0] == "off") {
+          antilink.splice(from, 1);
+          fs.writeFileSync(
+            "./database/antilink.json",
+            JSON.stringify(antilink)
+          );
+          reply("Sukses mematikan antilink!");
+        } else if (!q) {
+          sendButMessage(from, `MODE ANTILINK`, `Silahkan pilih salah satu`, [
+            {
+              buttonId: `${prefix}antilink on`,
+              buttonText: {
+                displayText: `on`,
+              },
+              type: 1,
+            },
+            {
+              buttonId: `${prefix}antilink off`,
+              buttonText: {
+                displayText: `off`,
+              },
+              type: 1,
+            },
+          ]);
+        }
+        break
+ case "antiviewonce":
+        if (!isGroup) return reply("Khusus di grup");
+        if (!isGroupAdmins && !mek.key.fromMe) return reply("Khusus admin");
+        if (args[0] == "on") {
+          if (isAntiviewonce) return reply("Sudah aktif!!");
+          antivo.push(from);
+          fs.writeFileSync("./database/antivo.json", JSON.stringify(antivo));
+          reply("Sukses mengaktifkan antiviewonce!");
+        } else if (args[0] == "off") {
+          antivo.splice(from, 1);
+          fs.writeFileSync("./database/antivo.json", JSON.stringify(antivo));
+          reply("Sukses mematikan antiviewonce!");
+        } else if (!q) {
+          sendButMessage(
+            from,
+            `MODE ANTIVIEWONCE`,
+            `Silahkan pilih salah satu`,
+            [
+              {
+                buttonId: `${prefix}antiviewonce on`,
+                buttonText: {
+                  displayText: `on`,
+                },
+                type: 1,
+              },
+              {
+                buttonId: `${prefix}antiviewonce off`,
+                buttonText: {
+                  displayText: `off`,
+                },
+                type: 1,
+              },
+            ]
+          );
+        }
+        break
  case 'owner':
             case 'developer':
             case 'author':
@@ -1392,20 +1554,21 @@ case 'upswaudio':
                 reply(`Kirim gambar dengan caption ${prefix}sticker\nDurasi Sticker Video 1-9 Detik`)
             }
             break               
-    case 'toimg':
-			if (!isQuotedSticker) return reply('𝗥𝗲𝗽𝗹𝘆/𝘁𝗮𝗴 𝘀𝘁𝗶𝗰𝗸𝗲𝗿 !')
-			reply(mess.wait)
-			encmedia = JSON.parse(JSON.stringify(mek).replace('quotedM','m')).message.extendedTextMessage.contextInfo
-			media = await hexa.downloadAndSaveMediaMessage(encmedia)
-			ran = getRandom('.png')
-			exec(`ffmpeg -i ${media} ${ran}`, (err) => {
-			fs.unlinkSync(media)
-			if (err) return reply('Yah gagal, coba ulangi ^_^')
-			buffer = fs.readFileSync(ran)
-			fakethumb(buffer,'NIH')
-			fs.unlinkSync(ran)
-			})
-			break
+    case "toimg":
+        if (!isQuotedSticker) return reply("𝗥𝗲𝗽𝗹𝘆/𝘁𝗮𝗴 𝘀𝘁𝗶𝗰𝗸𝗲𝗿 !");
+        reply(mess.wait);
+        encmedia = JSON.parse(JSON.stringify(mek).replace("quotedM", "m"))
+          .message.extendedTextMessage.contextInfo;
+        media = await hexa.downloadAndSaveMediaMessage(encmedia);
+        ran = getRandom(".png");
+        exec(`ffmpeg -i ${media} ${ran}`, (err) => {
+          fs.unlinkSync(media);
+          if (err) return reply("Yah gagal, coba ulangi ^_^");
+          buffer = fs.readFileSync(ran);
+          fakethumb(buffer, "NIH");
+          fs.unlinkSync(ran);
+        });
+        break
 	case 'ytsearch':
 			if (args.length < 1) return reply('Tolong masukan query!')
 			var srch = args.join('');
@@ -1767,25 +1930,6 @@ hexa.cmd.on('asupan', async (data) => {
             ren = `${g.HD}`
             sendMediaURL(from,ren,'DONE')
             break
-		case 'groupdetect':		
-		    case 'gcdtc':			
-		    case 'gcdetect':			
-		    if (!isOwner && !mek.key.fromMe) return reply(mess.owner)	       
-		    if (args.length < 1) return reply(`Ketik ${prefix + command} on/off`)		   
-		    if ((args[0]) === 'on') {		    
-		    if (isGcdetect) return reply('udah on')			
-		    gcdetect.push(from)			
-		    fs.writeFileSync('./src/gcdetect.json', JSON.stringify(gcdetect))	        
-		    reply(`\`\`\`✓Sukses mengaktifkan fitur di group\`\`\` *${groupMetadata.subject}*`)			
-		    } else if ((args[0]) === 'off') {			
-		    if (!isGcdetect) return reply('sudah off')			
-		    gcdetect.splice(from, 1)			
-		    fs.writeFileSync('./src/gcdetect.json', JSON.stringify(gcdetect))			
-		    reply(`\`\`\`✓Sukses menonaktifkan fitur di group\`\`\` *${groupMetadata.subject}*`)			
-		    } else {			
-		    reply('on untuk mengaktifkan, off untuk menonaktifkan')			
-		    }		        	
-		    break
     case 'runtime':
     case 'test':
             run = process.uptime() 
